@@ -18,6 +18,8 @@
 #define MESSAGE_SIZE 1024
 #define SEQUENCE_NUMBER_BITS 4
 
+#define SOCK_MTP 1
+
 #define MAX_MTP_SOCKETS 25
 
 #define ENOTBOUND 60

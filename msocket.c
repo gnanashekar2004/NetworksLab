@@ -145,12 +145,25 @@ int m_socket(int domain, int type, int protocol)
 
 int m_bind(int mtp_socket_id, struct sockaddr_in src_addr, struct sockaddr_in dest_addr)
 {
-    int udp_socket_id = shared_mtp_sockets[mtp_socket_id].udp_socket_id;
+    int index = -1;
+    for(int i=0;i<MAX_MTP_SOCKETS;i++){
+        if(shared_mtp_sockets[i].udp_socket_id==shared_mtp_sockets[mtp_socket_id].udp_socket_id){
+            index = i;
+            break;
+        }
+    }
+    if(index==-1){
+        errno = EINVAL;
+        return -1;
+    }
+    int udp_socket_id = shared_mtp_sockets[index].udp_socket_id;
 
     sock_info->sock_id = udp_socket_id;
     memcpy(&sock_info->IP, &src_addr.sin_addr.s_addr, sizeof(sock_info->IP));
     sock_info->port = src_addr.sin_port;
     sock_info->Errno = 0;
+
+    shared_mtp_sockets[index].dest_addr = dest_addr;
 
     semsignal(&semid1);
     semwait(&semid2);
