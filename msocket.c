@@ -13,6 +13,28 @@
 #include <time.h>
 #include "msocket.h"
 
+void semwait (semaphore *semid)
+{
+   struct sembuf sb;
+   int id=*semid;
+
+   sb.sem_num = 0;
+   sb.sem_flg = 0;
+   sb.sem_op = -1;
+   semop(id, &sb, 1);
+}
+
+void semsignal (semaphore *semid)
+{
+   struct sembuf sb;
+   int id=*semid;
+
+   sb.sem_num = 0;
+   sb.sem_flg = 0;
+   sb.sem_op = 1;
+   semop(id, &sb, 1);
+}
+
 void initialize_semaphores()
 {
     key_t key1 = ftok(SEM_KEY_PATH, SEM_KEY_ID1);
@@ -105,8 +127,8 @@ int m_socket(int domain, int type, int protocol)
 
     memset(&sock_info, 0, sizeof(SOCK_INFO));
 
-    sem_post(&semid1);
-    sem_wait(&semid2);
+    semsignal(&semid1);
+    semwait(&semid2);
 
     if (sock_info->sock_id == -1)
     {
@@ -130,8 +152,8 @@ int m_bind(int mtp_socket_id, struct sockaddr_in src_addr, struct sockaddr_in de
     sock_info->port = src_addr.sin_port;
     sock_info->Errno = 0;
 
-    sem_post(&semid1);
-    sem_wait(&semid2);
+    semsignal(&semid1);
+    semwait(&semid2);
 
     if(sock_info->sock_id==-1){
         errno = sock_info->Errno;

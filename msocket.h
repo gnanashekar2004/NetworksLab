@@ -33,14 +33,6 @@
 #define SHM_KEY_ID1 5678
 #define SHM_KEY_ID2 8765
 
-semaphore semid1 = -1;
-semaphore semid2 = -1;
-
-int shmid_sock_info = -1;
-int shmid_mtp = -1;
-void *shared_memory_sock_info = NULL;
-void *shared_memory_mtp = NULL;
-
 typedef struct {
     int sock_id;
     char IP[16];
@@ -64,10 +56,19 @@ typedef struct{
 
 typedef int semaphore;
 
-SOCK_INFO *sock_info;
+semaphore semid1 = -1;
+semaphore semid2 = -1;
 
+int shmid_sock_info = -1;
+int shmid_mtp = -1;
+void *shared_memory_sock_info = NULL;
+void *shared_memory_mtp = NULL;
+
+SOCK_INFO *sock_info;
 mtp_socket_t *shared_mtp_sockets;
 
+void semwait(semaphore *semid);
+void semsignal(semaphore *semid);
 void initialize_semaphores();
 void initialize_shared_memory();
 int m_socket(int domain,int type, int protocol);
@@ -77,4 +78,4 @@ int m_recvfrom(int mtp_socket_id,void *message,size_t length,struct sockaddr_in 
 int m_close(int mtp_socket_id);
 int dropMessage(float p);
 
-#endif;
+#endif
