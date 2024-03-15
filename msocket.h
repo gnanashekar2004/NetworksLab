@@ -28,12 +28,12 @@
 #define Prob 0.05
 
 #define SEM_KEY_PATH "./msocket.h"
-#define SEM_KEY_ID1 1234
-#define SEM_KEY_ID2 4321
+#define SEM_KEY_ID1 1230
+#define SEM_KEY_ID2 4320
 
 #define SHM_KEY_PATH "./msocket.h"
-#define SHM_KEY_ID1 5678
-#define SHM_KEY_ID2 8765
+#define SHM_KEY_ID1 5670
+#define SHM_KEY_ID2 8760
 
 typedef struct {
     int sock_id;
@@ -46,6 +46,7 @@ typedef struct{
     int is_free;
     int process_id;
     int udp_socket_id;
+    struct sockaddr_in src_addr;
     struct sockaddr_in dest_addr;
     int send_buffer[10][MESSAGE_SIZE];
     int recv_buffer[5][MESSAGE_SIZE];

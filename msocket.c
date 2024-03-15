@@ -137,25 +137,15 @@ int m_socket(int domain, int type, int protocol)
     }
 
     shared_mtp_sockets[index].udp_socket_id = sock_info->sock_id;
+    printf("Socked created with id %d\n", sock_info->sock_id);
 
     memset(&sock_info, 0, sizeof(SOCK_INFO));
 
     return index;
 }
 
-int m_bind(int mtp_socket_id, struct sockaddr_in src_addr, struct sockaddr_in dest_addr)
+int m_bind(int index, struct sockaddr_in src_addr, struct sockaddr_in dest_addr)
 {
-    int index = -1;
-    for(int i=0;i<MAX_MTP_SOCKETS;i++){
-        if(shared_mtp_sockets[i].udp_socket_id==shared_mtp_sockets[mtp_socket_id].udp_socket_id){
-            index = i;
-            break;
-        }
-    }
-    if(index==-1){
-        errno = EINVAL;
-        return -1;
-    }
     int udp_socket_id = shared_mtp_sockets[index].udp_socket_id;
 
     sock_info->sock_id = udp_socket_id;
@@ -173,6 +163,7 @@ int m_bind(int mtp_socket_id, struct sockaddr_in src_addr, struct sockaddr_in de
         return -1;
     }
 
+    printf("Socket bound with id %d\n",sock_info->sock_id);
     memset(&sock_info,0,sizeof(SOCK_INFO));
 
     return 0;

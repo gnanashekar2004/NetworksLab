@@ -41,7 +41,9 @@ int main(){
             if(sockid < 0 ){
                 sock_info->sock_id = -1;
                 sock_info->Errno = errno;
-            }
+            }else{
+                sock_info->sock_id = sockid;
+            } 
         }
         else{
             addr.sin_family = AF_INET;
