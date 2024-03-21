@@ -127,19 +127,16 @@ int m_socket(int domain, int type, int protocol)
         }
     }
 
-    printf("index: %d\n",index);
-
     if (index == -1)
     {
         errno = ENOBUFS;
         return -1;
     }
 
-    memset(&shared_sock_info, 0, sizeof(SOCK_INFO));
+    memset(shared_sock_info, 0, sizeof(SOCK_INFO));
 
     semsignal(&semid1);
     semwait(&semid2);
-
 
     if (shared_sock_info->sock_id == -1)
     {
@@ -147,14 +144,10 @@ int m_socket(int domain, int type, int protocol)
         return -1;
     }
 
-    // printf("hi\n");
-    // shared_mtp[index].udp_socket_id = shared_sock_info->sock_id;
-    // printf("shared_sock_info: %d\n", shared_sock_info->sock_id);
-    printf("shared_mtp: %d\n", shared_mtp[index].udp_socket_id);
-    // printf("hi\n");
+    shared_mtp[index].udp_socket_id = shared_sock_info->sock_id;
     printf("Socked created with id %d\n", shared_sock_info->sock_id);
 
-    memset(&shared_sock_info, 0, sizeof(SOCK_INFO));
+    memset(shared_sock_info, 0, sizeof(SOCK_INFO));
 
     return index;
 }
@@ -171,12 +164,16 @@ int m_bind(int index, struct sockaddr_in src_addr, struct sockaddr_in dest_addr)
 
     int udp_socket_id = shared_mtp[index].udp_socket_id;
 
+    // printf("hi\n");
+
     shared_sock_info->sock_id = udp_socket_id;
     memcpy(&shared_sock_info->IP, &src_addr.sin_addr.s_addr, sizeof(shared_sock_info->IP));
     shared_sock_info->port = src_addr.sin_port;
     shared_sock_info->Errno = 0;
 
     shared_mtp[index].dest_addr = dest_addr;
+
+    // printf("hi\n");
 
     semsignal(&semid1);
     semwait(&semid2);
@@ -187,7 +184,7 @@ int m_bind(int index, struct sockaddr_in src_addr, struct sockaddr_in dest_addr)
     }
 
     printf("Socket bound with id %d\n",shared_sock_info->sock_id);
-    memset(&shared_sock_info,0,sizeof(SOCK_INFO));
+    memset(shared_sock_info,0,sizeof(SOCK_INFO));
 
     return 0;
 }
