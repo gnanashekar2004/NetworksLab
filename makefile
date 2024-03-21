@@ -15,9 +15,13 @@ user1: user1.c lib
 user2: user2.c lib
 	gcc -Wall -Wextra -o user2 user2.c -L. -lmsocket -pthread
 
-run: initmsocket user1 user2
+run: initmsocket
 	./initmsocket
+
+run1: user1
 	./user1
+
+run2: user2
 	./user2
 
 clean:
