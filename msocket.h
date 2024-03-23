@@ -36,6 +36,24 @@
 #define SHM_KEY_ID2 'D'
 
 typedef struct {
+    int size;
+    int expected_seq_no[16];
+    int last_seq_no;
+    int nospace;
+    int recv_seq_no[16];
+}rwnd_t;
+
+typedef struct {
+    int size;
+    int winStart;
+    int winEnd;
+    int bufStart;
+    int bufEnd;
+    int noACK[16];
+    int lastSeqNo;
+}swnd_t;
+
+typedef struct {  
     int sock_id;
     char IP[16];
     int port;

@@ -164,7 +164,6 @@ int m_bind(int index, struct sockaddr_in src_addr, struct sockaddr_in dest_addr)
 
     int udp_socket_id = shared_mtp[index].udp_socket_id;
 
-    // printf("hi\n");
 
     shared_sock_info->sock_id = udp_socket_id;
     memcpy(&shared_sock_info->IP, &src_addr.sin_addr.s_addr, sizeof(shared_sock_info->IP));
