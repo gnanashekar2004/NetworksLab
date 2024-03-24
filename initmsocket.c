@@ -1,14 +1,129 @@
 #include "msocket.h"
 #include <pthread.h>
+#include <sys/select.h>
+#include <signal.h>
+
+int semid1, semid2;
+SOCK_INFO *shared_sock_info;
+mtp_socket_t *shared_mtp;
+
+void R_handle_timeout(){
+    for(int i=0;i<MAX_MTP_SOCKETS;i++){
+        if(!shared_mtp[i].is_free && shared_mtp[i].rwnd.nospace){
+            if(shared_mtp[i].rwnd.size>0){
+                //send duplicate ACK to sender with updated size
+                shared_mtp[i].rwnd.nospace=0;
+            }
+            else{
+                printf("No space available for socket %d, continue to wait\n",i);
+            }
+        }
+    }    
+}
+
+void S_handle_timeout(){
+    for(int i=0;i<MAX_MTP_SOCKETS;i++){
+        if(!shared_mtp[i].is_free){
+            time_t now;
+            time(&now);
+
+            if(difftime(now,shared_mtp[i].swnd.last_sent_time)>=TIMEOUT){
+                //retransmit messages in swnd.
+            }
+        }
+    }
+
+}
 
 void *receiver(void *arg){
+    (void)arg;
     printf("Receiver thread\n");
+    fd_set readfds;
+    int max_fd;
+
+    char buffer[MESSAGE_SIZE];
+
+    while(1){
+        FD_ZERO(&readfds);
+        max_fd=0;
+
+        for(int i=0;i<MAX_MTP_SOCKETS;i++){
+            if(!shared_mtp[i].is_free){
+                FD_SET(shared_mtp[i].udp_socket_id,&readfds);
+                if(shared_mtp[i].udp_socket_id>max_fd){
+                    max_fd=shared_mtp[i].udp_socket_id;
+                }
+            }
+        }
+
+        struct timeval timeout;
+        timeout.tv_sec=TIMEOUT;
+        timeout.tv_usec=0;
+
+        int activity = select(max_fd+1,&readfds,NULL,NULL,&timeout);
+
+        if(activity<0){
+            perror("select_R");
+            continue;
+        }else if(activity==0){
+            R_handle_timeout();
+        }else{
+            for(int i=0;i<MAX_MTP_SOCKETS;i++){
+                if(!shared_mtp[i].is_free && FD_ISSET(shared_mtp[i].udp_socket_id,&readfds)){
+                    memset(buffer,0,sizeof(buffer));
+                    //handle recv messages
+                    
+                    if(buffer[0]=='M'){
+                        //data msg
+
+                        //extract seqence no.
+                        //store msg in buffer.
+                        //update swnd and rwnd
+                        //set nospace if buffer full.
+                    }
+                    else if(buffer[0]=='A'){
+                        //ACK msg
+
+                        //extract seq no
+                        //update swnd
+                        //remove msg from buffer
+                    }
+                    else if(buffer[0]=='D'){
+                        //Duplicate ACK msg
+
+                        //extract seq no
+                        //update swnd
+                    }
+                }
+            }
+        }
+    }
+
     pthread_exit(NULL);
+    return NULL;
 }
 
 void *sender(void *arg){
+    (void)arg;
     printf("Sender thread\n");
+
+    srand(time(0));
+
+    while(1){
+        int sleep_time=rand()%(TIMEOUT/2);
+        sleep(sleep_time);
+
+        S_handle_timeout();
+
+        for(int i=0;i<MAX_MTP_SOCKETS;i++){
+            if(!shared_mtp[i].is_free){
+                //send pending messages.
+            }
+        }
+    }
+
     pthread_exit(NULL);
+    return NULL;
 }
 
 int main(){
@@ -17,10 +132,6 @@ int main(){
 
     pthread_t R,S;
     int rtid,stid;
-
-    int semid1, semid2;
-    SOCK_INFO *shared_sock_info;
-    mtp_socket_t *shared_mtp;
 
     initialize_semaphores(&semid1, &semid2);
     initialize_shared_memory(&shared_sock_info, &shared_mtp);

@@ -113,6 +113,10 @@ int m_socket(int domain, int type, int protocol)
     int semid1, semid2;
     SOCK_INFO *shared_sock_info;
     mtp_socket_t *shared_mtp;
+    int temp=domain; domain=temp;
+    temp=type; type=temp;
+    temp=protocol; protocol=temp;
+
 
     initialize_semaphores(&semid1, &semid2);
     initialize_shared_memory(&shared_sock_info, &shared_mtp);
@@ -203,7 +207,7 @@ int m_sendto(int mtp_socket_id, const void *message, size_t length, struct socka
     }
 
     if(memcmp(&dest_addr,&shared_mtp[mtp_socket_id].dest_addr,sizeof(struct sockaddr_in))!=0){
-        errno = ENOTBOUND;
+        errno = ENOTCONN;
         return -1;
     }
 
@@ -263,8 +267,6 @@ int m_close(int mtp_socket_id)
 
     initialize_semaphores(&semid1, &semid2);
     initialize_shared_memory(&shared_sock_info, &shared_mtp);
-
-
 
     close(shared_mtp[mtp_socket_id].udp_socket_id);
 

@@ -24,7 +24,7 @@
 
 #define ENOTBOUND 60
 
-#define T 5
+#define TIMEOUT 5
 #define Prob 0.05
 
 #define SEM_KEY_PATH "."
@@ -51,6 +51,7 @@ typedef struct {
     int bufEnd;
     int noACK[16];
     int lastSeqNo;
+    time_t last_sent_time;
 }swnd_t;
 
 typedef struct {  
@@ -68,8 +69,8 @@ typedef struct{
     struct sockaddr_in dest_addr;
     int send_buffer[10][MESSAGE_SIZE];
     int recv_buffer[5][MESSAGE_SIZE];
-    int swnd[5];
-    int rwnd[5];
+    swnd_t swnd;
+    rwnd_t rwnd;
 }mtp_socket_t;
 
 #define SHM_SOCK_INFO sizeof(SOCK_INFO)
@@ -82,7 +83,7 @@ void semsignal(semaphore *semid);
 void initialize_semaphores();
 void initialize_shared_memory();
 int m_socket(int domain,int type, int protocol);
-int m_bind(int mtp_socket_id,struct sockaddr_in src_addr,struct sockaddr_in dest_addr);
+int m_bind(int index,struct sockaddr_in src_addr,struct sockaddr_in dest_addr);
 int m_sendto(int mtp_socket_id,const void *message,size_t length,struct sockaddr_in dest_addr);
 int m_recvfrom(int mtp_socket_id,void *message,size_t length,struct sockaddr_in *src_addr);
 int m_close(int mtp_socket_id);
